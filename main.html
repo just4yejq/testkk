@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <div class="row" style="height:70px;background-color: blue;offsetRight:5px;width: 100%">
+        <!--<div class="pull-left"><img src="img/logo.png" style="height: 70px;width: 70px;"/></div>-->
+        <div class="pull-left"><h2 style="color: #F9F9FF">抠钱网</h2></div>
+        <button class="btn btn-primary btn-sm pull-right " style="margin-right:50px;margin-top:15px;height:40px;" ng-click="window_close()"><img src="img/icon_exit.png">退出</img></button>
+        <button class="btn btn-primary btn-sm pull-right " style="margin-right:1px;margin-top:15px;height:40px;" ng-click="loginOut()"><img src="img/icon_close.png">注销</img></button>
+        <button class="btn btn-primary btn-sm pull-right " style="margin-right:1px;margin-top:15px;height:40px;" data-toggle="modal" data-target="#pwdModal"><img src="img/icon_password.png">修改密码</img></button>
+        <button class="btn btn-primary btn-sm pull-right " style="margin-right:1px;margin-top:15px;height:40px;" ui-sref="main"><img src="img/icon_home.png">主页</img></button>
+    </div>
+</head>
+<body>
+    <div class="ch-container">
+        <div  style="margin-top: 5px">
+            <!-- 左侧菜单栏 -->
+            <div class="col-sm-2 col-lg-2">
+                <div class="sidebar-nav">
+                    <div class="nav-canvas">
+                        <div class="nav-sm nav nav-stacked">
+
+                        </div>
+                        <ul class="nav nav-pills nav-stacked main-menu">
+                            <li class="nav-header">欢迎您：{{loginUser.userName}}</li>
+                            <li class="item" style="padding-top: 10px;padding-bottom: 10px;" ng-repeat="modle in menus|filter:level=0" >
+                                <span>
+                                    <a ng-click="navFunc(modle.code)" style="height:42px;padding-left: 15px; ">
+                                        <i class="glyphicon glyphicon-plus" ></i>
+                                        <span> {{modle.name}}</span>
+                                    </a>
+                                </span>
+
+                                <ul class="nav nav-pills nav-stacked" style="padding-left: 15px;" ng-if="navAction === modle.code" ng-repeat="item in menus|filter:{parentcode:modle.code,level:1}">
+                                    <li><a ng-click="uiSerf(item.code)">{{item.name}}</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div id="content" class="col-lg-10 col-sm-10">
+                <!-- 内容视图 -->
+                <div ui-view/>
+            </div><!--/.fluid-container-->
+        </div>
+    </div>
+</body>
+<footer >
+    <p class="col-md-3 col-sm-3 col-xs-10 copyright center">&copy; <a href="www.codetheworld.cn" target="_blank">个人</a> 2017 - 2018</p>
+<!--    <p class="col-md-3 col-sm-3 col-xs-10 powered-by center">Powered by: <a
+            href="http://usman.it/free-responsive-admin-template">Le.s.q</a></p>-->
+</footer>
+<!-- 弹出框  -->
+<div class="modal fade" id="pwdModal"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" style="position:absolute;top:20% ;">
+    <div class="modal-dialog" style="width: 340px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" id="pwd_colseButton" class="close" data-dismiss="modal" >
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    密码修改
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row center" style="margin-top: -20px;">
+                    <h6 style="color: red">密码为6-32位</h6>
+                </div>
+                <label class="item item-input" style="padding-left: 5px;">
+                    <span class="input-label">原密码：</span>
+                    <input type="password" name="old_pwd"   ng-model="pwd.oldPwd" style="width:180px;">
+                    <button class="btn btn-primary btn-xs" ng-click="checkPwd()">验证</button>
+                </label>
+                <div class="item padding-left">
+                    <div class="col-75 col-offset-25 red">
+                        <p ng-show="checkFlag==false && !old_pwd.$pristine">* 原密码不正确</p>
+                    </div>
+                </div>
+                <label class="item item-input" style="padding-left: 5px;">
+                    <span class="input-label">新密码：</span>
+                    <input type="password"  ng-model="pwd.newPwd" style="width:180px;" >
+                </label>
+                <label class="item item-input"style="padding-left: 5px;">
+                    <span class="input-label">确认新密码：</span>
+                    <input type="password" name="remp_pwd" ng-model="pwd.rempPwd" style="width:180px;" >
+                </label>
+                <div class="item padding-left">
+                    <div class="col-75 col-offset-25 red">
+                        <p ng-show="pwd.rempPwd!=pwd.newPwd && !remp_pwd.$pristine" >* 两次密码不一致</p>
+                    </div>
+                </div>
+                <div class="row center">
+                    <button type="button btn-sm center" class="btn btn-primary" ng-click="updPwd()">
+                        保存
+                    </button>
+                    <button type="button btn-sm center" class="btn btn-default" data-dismiss="modal">
+                        退出
+                    </button>
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</html>

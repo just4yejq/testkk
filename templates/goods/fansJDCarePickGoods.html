@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>京粉精选商品</title>
+</head>
+<body>
+<!--查询选项-->
+<div class="box">
+    <div class="box-inner">
+        <div class="box-header" data-original-title="">
+            <h2><i class="glyphicon glyphicon-edit"style="padding-left: 20px;"></i>当前位置：<span style="font-size: 14px">京粉精选商品</span></h2>
+        </div>
+        <form class="form-inline" role="form">
+            <div class="row">
+                <div class="col-md-8 col-sm-8 col-xs-8 paddingTop">
+                    <b>&nbsp;&nbsp;jd.kpl.open.union.search.byelited ( 精选商品池查询接口 )</b><br/>
+                    &nbsp;&nbsp;精选优质商品，每日更新，可通过频道ID查询各个频道下的精选商品。例如9.9专区频道，主要为包邮和价格9.9的商品。
+                </div>
+            </div>
+            <div class="row center">
+                <div class="col-md-4 col-sm-4 col-xs-4 paddingTop">
+                    <span class="input-label">频道id：</span>
+                    <select  class="form-control" ng-model="params.channel" style="height:30px;width: 180px;">
+                        <option value="">--请选择--</option>
+                        <option ng-repeat="op in channelTypes" value="{{op.typeId}}">{{op.typeName}}</option>
+                    </select>
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-4" style="padding-top: 5px;">
+                    <button class="btn btn-default btn-sm" ng-click="reset()">重置</button>
+                    <button class="btn btn-primary btn-sm" ng-click="query()">查询</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<!--查询结果列表-->
+<div class="box-inner">
+
+    <div class="box-header" data-original-title="">
+
+        <h2><i class="glyphicon glyphicon-list" style="padding-left: 20px;"></i> 商品列表</h2>
+
+    </div>
+
+    <div class="box-content" style="padding: 0px;padding-bottom: 0px;">
+
+        <div class="box-content">
+
+            <div  ui-grid="gridOptions" style="width: 100%; height: 500px; margin: -10px;" ui-grid-pagination
+                  ui-grid-selection  ui-grid-exporter ui-grid-resize-columns ui-grid-auto-resize>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!--提报优惠券集合 弹框-->
+
+<!--全详细信息 弹框-->
+
+
+</body>
+</html>

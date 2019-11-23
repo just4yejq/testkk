@@ -1,0 +1,526 @@
+/**
+ * Created by leroy on 2017/7/31.
+ */
+app.controller('loginCtrl', function($rootScope,$scope,$state,$location, UtilService,modalService) {
+        $scope.params = {userName: '', passWord: ''};
+        $scope.msg = "请输入用户名和密码.";
+        $scope.login = function () {
+            UtilService.getData("sys/login", $scope.params).then(function (res) {
+                console.log("res",res);
+                if (res.meta.code == '0') {
+                    $rootScope.islogin = true;
+                    document.cookie = "islogin=true;sessionId="+res.data;
+                    $scope.cookie_user = {
+                        userName:'系统管理员'
+                    }
+                    document.cookie = "sessionId="+res.data;
+                    $rootScope.sessionId = res.data;
+                    $state.go("main");
+                } else {
+                    $scope.msg =res.meta.msg;
+                    layer.msg(res.meta.msg, {icon: 5});//哭脸
+                }
+            });
+        }
+    })
+    .controller('mainCtrl', function($rootScope,$scope,$state,$uibModal,$interval, UtilService) {
+        $scope.loginUser = $rootScope.loginUser;
+        // 打开树形菜单，定义一个函数navFunc， 接受一个参数
+        $scope.navFunc = function (arg) {
+            if($scope.navAction ==arg) {
+                $scope.navAction="";
+            } else{
+                // 让navAction变量等于函数传入过来的值arg
+                $scope.navAction = arg;
+            }
+        };
+        $scope.loginOut = function () {
+            $rootScope.islogin = false;
+            document.cookie = "islogin=false";
+            $state.go("login");
+           /* UtilService.getData("sys/loginOut.action", $scope.params).then(function (data) {
+                // if (data.success == '0000') {
+                    $rootScope.loginUser = {};
+
+            }, function (data) {
+                alert(data.msg)//错误时走这儿
+            });*/
+        }
+        $state.go("main.Employee");
+        //页面跳转
+        $scope.uiSerf = function (str) {
+            var state = "main."+str;
+            $state.go(state);
+        }
+        $scope.checkFlag = null;
+        $scope.pwd = {oldPwd:'',newPwd:'',rempPwd:''};
+        $scope.checkPwd = function () {
+            UtilService.getData("sys/checkOldPwd.action", {inputPwd:$scope.pwd.oldPwd}).then(function (data) {
+                if (data.success == '0000') {
+                    $scope.checkFlag = true;
+                }else{
+                    $scope.checkFlag = false;
+                }
+                layer.msg(data.msg);
+            });
+        }
+        $scope.updPwd = function () {
+            if($scope.checkFlag==true){
+                UtilService.getData("sys/updPwd.action", {newPwd:$scope.pwd.newPwd}).then(function (data) {
+                    if (data.success == '0000') {
+                        $scope.checkFlag = true;
+                        var colseButton=document.getElementById('pwd_colseButton');
+                        console.log(document);
+                        colseButton.click();
+                        layer.alert('修改成功，请重新登录', function(index){
+                            layer.close(index);
+                            $state.go("login");
+                        });
+                    }else{
+                        layer.msg(data.msg,{icon:5});
+                    }
+                });
+            }else{
+                layer.alert('请先校验原密码');
+                return;
+            }
+        }
+        $scope.window_close = function () {
+            layer.confirm('确认关闭窗口？',{
+                yes:function(){
+                    if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") !=-1) {
+                            window.location.href="about:blank";
+                            window.close();
+                        } else {
+                            window.opener = null;
+                            window.open("", "_self");
+                            window.close();
+                        }
+
+                }
+            });
+        }
+    })
+    .controller('orderCtrl', function($rootScope,$scope, UtilService,GridService) {
+        $scope.statusTypes = [{"id":0,"value":"全部"},{"id":1,"value":"待结算"},{"id":2,"value":"已结算"},{"id":3,"value":"已失效"}];
+        $scope.params = {
+            pageSize:15,
+            pageNum:1,
+            orderId:'',
+            nickName:'',
+            orderTime:'',
+            statusType:0
+        }
+        //操作接口
+        $scope.operations = {
+            "query":"sys/getOrderList"
+        }
+        GridService.initGrid($scope,$scope.operations.query,$scope.params);
+        $scope.query();
+        console.log($scope.gridOptions.data,"scope.gridOptions.data");
+
+        $scope.gridOptions.columnDefs = [{ field:'index',name:'id',
+            displayName: '序号',
+            width: '70',
+            enableColumnMenu: true,// 是否显示列头部菜单按钮
+            enableHiding: true,
+            suppressRemoveSort: false,
+            enableCellEdit: false,// 是否可编辑
+            cellTemplate : '<div ng-bind="(grid.appScope.params.pageNum-1)*grid.appScope.params.pageSize+rowRenderIndex+1" style="padding-left: 20px;"> </div>'
+        },
+            { field: "nickName", displayName: '会员名称'},
+            { field: "orderId", displayName: '订单id'},
+            { field: "skuName", displayName: '订单商品信息'},
+            //{ field: "skuNum", width:'60',displayName: '数量'},
+            { field: "skuAmt", displayName: '计价金额',cellFilter:'fen2yuan'},
+            { field: "orderTime", displayName: '下单时间'},
+            { field: "estimateFee", displayName: '订单预计佣金',cellFilter:'fen2yuan'},
+            { field: "actualFee", displayName: '订单实际佣金',cellFilter:'fen2yuan'},
+            { field: "userActualFee", displayName: '会员佣金',cellFilter:'fen2yuan'},
+            { field: "commissionRate", displayName: '会员佣金比例',cellFilter:'rate'},
+            { field: "spreadEstimateFee", displayName: '推荐人预计佣金',cellFilter:'fen2yuan'},
+            { field: "spreadActualFee", displayName: '推荐人实际佣金',cellFilter:'fen2yuan'},
+            // { field: "userId", displayName: '会员id'},
+            { field: "orderStatusView", displayName: '订单状态'},
+            /*{
+                width: '130',
+                field : 'action',
+                displayName : "操作",
+                enableColumnMenu: true,// 是否显示列头部菜单按钮
+                enableHiding: true,
+                enableCellEdit: false,
+                // cellTemplate : '<div class="container-fluid"><div class="row cell-action-style"><div class="col-xs-3 text-center"><div class="div-click"  ng-click="grid.appScope.update(row)"><span class="glyphicon glyphicon-edit" aria-hidden="true">保存</span></div></div><div class="col-xs-3 text-center" ><div class="div-click"  ng-click="grid.appScope.del(row)"><span class="glyphicon glyphicon-remove" >删除</span></div></div><div></div></div></div>'
+                cellTemplate : '<a class="btn btn-xs btn-info" data-toggle="modal" data-target="#myModal" style="margin-left: 5px;margin-right: 5px;margin-bottom: 2px;margin-top: 2px;" ng-click="grid.appScope.updateRow(row)"> <i class="glyphicon glyphicon-edit icon-white"></i>修改 </a>' +
+                '<a class="btn btn-xs btn-danger" ng-click="grid.appScope.del(row)"> <i class="glyphicon glyphicon-trash icon-white"></i>删除 </a>'
+            }*/
+        ];
+
+    })
+
+    .controller('fundOutCtrl', function($rootScope,$scope, UtilService,GridService) {
+        $scope.fundInoutStates =  [{id:1,value:"待审核"},{id:2,value:"驳回"},{id:10,value:"已完成"}];
+        $scope.params = {
+            pageSize:15,
+            pageNum:1,
+            state:null,
+            inorout:2,
+            accountNo:'',  //提现账号
+            nickName:''
+        }
+        //操作接口
+        $scope.operations = {
+            "query":"sys/queryFundInoutList"
+        }
+        GridService.initGrid($scope,$scope.operations.query,$scope.params);
+        $scope.query();
+        console.log($scope.gridOptions.data,"scope.gridOptions.data");
+
+        $scope.gridOptions.columnDefs = [{ field:'index',name:'id',
+            displayName: '序号',
+            width: '70',
+            enableColumnMenu: true,// 是否显示列头部菜单按钮
+            enableHiding: true,
+            suppressRemoveSort: false,
+            enableCellEdit: false,// 是否可编辑
+            cellTemplate : '<div ng-bind="(grid.appScope.params.pageNum-1)*grid.appScope.params.pageSize+rowRenderIndex+1" style="padding-left: 20px;"> </div>'
+        },
+            { field: "nickName", displayName: '会员名称'},
+            { field: "amount", displayName: '金额(元)',cellFilter:'fen2yuan'},
+            { field: "accountType", displayName: '账号类型',cellFilter:'accountTypeFilter'},
+            { field: "accountName", displayName: '收款人名称'},
+            { field: "accountNo", displayName: '账号'},
+            { field: "createTime", displayName: '申请时间'},
+            { field: "remark", displayName: '备注'},
+            { field: "state", displayName: '状态',cellFilter:'inoutFilter'},
+            {
+                width: '100',
+                field : 'action',
+                displayName : "操作",
+                enableColumnMenu: true,// 是否显示列头部菜单按钮
+                enableHiding: true,
+                enableCellEdit: false,
+                // cellTemplate : '<div class="container-fluid"><div class="row cell-action-style"><div class="col-xs-3 text-center"><div class="div-click"  ng-click="grid.appScope.update(row)"><span class="glyphicon glyphicon-edit" aria-hidden="true">保存</span></div></div><div class="col-xs-3 text-center" ><div class="div-click"  ng-click="grid.appScope.del(row)"><span class="glyphicon glyphicon-remove" >删除</span></div></div><div></div></div></div>'
+                cellTemplate : '<a ng-if="row.entity.state==1" class="btn btn-xs btn-info" data-toggle="modal" data-target="#myModal" style="margin-left: 5px;margin-right: 5px;margin-bottom: 2px;margin-top: 2px;" ng-click="grid.appScope.audit(row.entity)"> <i class="glyphicon glyphicon-edit icon-white"></i>审核 {{state}} </a>'
+                    /*+
+                '<a class="btn btn-xs btn-danger" ng-click="grid.appScope.del(row)"> <i class="glyphicon glyphicon-trash icon-white"></i>删除 </a>'*/
+            }
+        ];
+        $scope.audit = function (model) {
+            $scope.model = model
+        }
+        $scope.auditFund = function (id,state,remark) {
+            $scope.auditParams = {"id":id,"state":state,"remark":remark};
+            console.log($scope.auditParams);
+            UtilService.getData("sys/auditFundOut", $scope.auditParams).then(function (res) {
+                console.log("res",res);
+                if (res.meta.code == '0') {
+                    layer.msg("操作成功")
+                    var modalId = "#myModal";
+                    $(modalId).modal("hide");
+                } else {
+                    layer.msg(res.meta.message, {icon: 5});//哭脸
+                }
+            });
+        }
+
+    })
+    .controller('userCtrl', function($rootScope,$scope, UtilService,GridService) {
+        $scope.params = {
+            pageSize:15,
+            pageNum:1,
+            userCode:'',
+            userName:'',
+            ids:[]
+        }
+        //操作接口
+        $scope.operations = {
+            "add":"sys/saveUser.action",
+            "upd":"sys/saveUser.action",
+            "del":"sys/deleteUser.action",
+            "query":"sys/syslist"
+        }
+        GridService.initGrid($scope,$scope.operations.query,$scope.params);
+        $scope.query();
+        console.log($scope.gridOptions.data,"scope.gridOptions.data");
+
+        $scope.gridOptions.columnDefs = [{ field:'index',name:'id',
+            displayName: '序号',
+            width: '70',
+            enableColumnMenu: true,// 是否显示列头部菜单按钮
+            enableHiding: true,
+            suppressRemoveSort: false,
+            enableCellEdit: false,// 是否可编辑
+            cellTemplate : '<div ng-bind="(grid.appScope.params.pageNum-1)*grid.appScope.params.pageSize+rowRenderIndex+1" style="padding-left: 20px;"> </div>'
+        },
+            { field: "userCode", displayName: '用户名'},
+            { field: "userName", displayName: '姓名'},
+            { field: "departmentName", displayName: '部门'},
+            { field: "userDuties", displayName: '职务'},
+            { field: "telephone", displayName: '电话号码'},
+            {
+                width: '130',
+                field : 'action',
+                displayName : "操作",
+                enableColumnMenu: true,// 是否显示列头部菜单按钮
+                enableHiding: true,
+                enableCellEdit: false,
+                // cellTemplate : '<div class="container-fluid"><div class="row cell-action-style"><div class="col-xs-3 text-center"><div class="div-click"  ng-click="grid.appScope.update(row)"><span class="glyphicon glyphicon-edit" aria-hidden="true">保存</span></div></div><div class="col-xs-3 text-center" ><div class="div-click"  ng-click="grid.appScope.del(row)"><span class="glyphicon glyphicon-remove" >删除</span></div></div><div></div></div></div>'
+                cellTemplate : '<a class="btn btn-xs btn-info" data-toggle="modal" data-target="#myModal" style="margin-left: 5px;margin-right: 5px;margin-bottom: 2px;margin-top: 2px;" ng-click="grid.appScope.updateRow(row)"> <i class="glyphicon glyphicon-edit icon-white"></i>修改 </a>' +
+                '<a class="btn btn-xs btn-danger" ng-click="grid.appScope.del(row)"> <i class="glyphicon glyphicon-trash icon-white"></i>删除 </a>'
+            }
+        ];
+        $scope.changePwd = function () {
+            $scope.model.pwdFlag=true;
+        }
+    })
+    .controller('dictionaryCtrl', function($rootScope,$scope, UtilService,GridService) {
+        $scope.params = {
+            pageSize:15,
+            pageNum:1,
+            typeCode:''
+        }
+        $scope.enabledArr = [{id:1,value:'有效'},{id:2,value:'无效'}];
+        //操作接口
+        $scope.operations = {
+            "add":"sys/saveDict.action",
+            "upd":"sys/saveDict.action",
+            "del":"sys/deleteDict.action",
+            "query":"sys/queryDictionary.action"
+        }
+        GridService.initGrid($scope,$scope.operations.query,$scope.params);
+        $scope.query();
+        console.log($scope.gridOptions.data,"scope.gridOptions.data");
+
+        $scope.gridOptions.columnDefs = [
+            { field:'id',
+                displayName: 'id',
+                width: '70'
+            },
+            { field: "typeCode", displayName: '配置类型',cellFilter:'dict:"DICT"'},
+            // { field: "dataKey", displayName: '数据库值'},
+            { field: "dataValue", displayName: '配置描述'},
+            { field: "dataRemark", displayName: '备注'},
+            { field: "enabled", displayName: '状态',cellFilter:'stateFilter'},
+            { field: "extend1", displayName: '属性1'},
+            { field: "extend2", displayName: '属性2'},
+            { field: "extend3", displayName: '属性3',cellFilter:'dict:"SITE_NUMBER"'},
+            {
+                width: '130',
+                field : 'action',
+                displayName : "操作",
+                enableColumnMenu: true,// 是否显示列头部菜单按钮
+                enableHiding: true,
+                enableCellEdit: false,
+                // cellTemplate : '<div class="container-fluid"><div class="row cell-action-style"><div class="col-xs-3 text-center"><div class="div-click"  ng-click="grid.appScope.update(row)"><span class="glyphicon glyphicon-edit" aria-hidden="true">保存</span></div></div><div class="col-xs-3 text-center" ><div class="div-click"  ng-click="grid.appScope.del(row)"><span class="glyphicon glyphicon-remove" >删除</span></div></div><div></div></div></div>'
+                cellTemplate : '<a class="btn btn-xs btn-info" data-toggle="modal" data-target="#myModal" style="margin-left: 5px;margin-right: 5px;margin-bottom: 2px;margin-top: 2px;" ng-click="grid.appScope.updateRow(row)"> <i class="glyphicon glyphicon-edit icon-white"></i>修改 </a>' +
+                '<a class="btn btn-xs btn-danger" ng-click="grid.appScope.del(row)"> <i class="glyphicon glyphicon-trash icon-white"></i>删除 </a>'
+            }
+        ];
+
+        $scope.callControll = function(obj){
+            console.log(obj,"obj");
+            if(obj.id ==null || obj.id ==undefined){
+                $rootScope.dictionarys.SITE_NUMBER.push(obj);
+            }else{
+                for(var i=0;i<$rootScope.dictionarys.SITE_NUMBER.length;i++){
+                    if($rootScope.dictionarys.SITE_NUMBER[i].id == obj.id){
+                        $rootScope.dictionarys.SITE_NUMBER.splice(i,1);
+                    }
+                }
+                $rootScope.dictionarys.SITE_NUMBER.push(obj);
+            }
+            console.log($rootScope.dictionarys,"$rootScope.dictionarys");
+        }
+    })
+    .controller('custCtrl', function($rootScope,$scope,UtilService,GridService) {
+        $scope.params = {
+            pageSize:15,
+            pageNum:1,
+            nickName:'',
+            parentNickName:''
+        }
+        //操作接口
+        $scope.operations = {
+            "query":"sys/queryCustList.action"
+        }
+        GridService.initGrid($scope,$scope.operations.query,$scope.params);
+        $scope.query();
+        $scope.getUserFund = function (value) {
+            $scope.userIdParams = {"keyStr":value};
+            UtilService.getData("sys/queryUserFundByUserId", $scope.userIdParams).then(function (res) {
+                console.log("res",res);
+                if (res.meta.code == '0') {
+                    $scope.userFund = res.data;
+                } else {
+                    $scope.msg =res.meta.msg;
+                    layer.msg(res.meta.msg, {icon: 5});//哭脸
+                }
+            });
+        }
+
+        $scope.gridOptions.columnDefs = [{ name:'id',
+            displayName: '序号',
+            width: '70',
+            enableColumnMenu: true,// 是否显示列头部菜单按钮
+            enableHiding: false,
+            suppressRemoveSort: false,
+            enableCellEdit: false,// 是否可编辑
+            cellTemplate : '<div ng-bind="(grid.appScope.params.pageNum-1)*grid.appScope.params.pageSize+rowRenderIndex+1" style="padding-left: 20px;"> </div>'
+        },
+            { field: "userId",width: '80', displayName: 'userId'},
+            { field: "nickName", displayName: '用户昵称'},
+            { field: "parentName", displayName: '推荐人'},
+            { field: "sex", width: '50',displayName: '性别',cellFilter:'sexFilter'},
+            { field: "nativePlace", displayName: '所在地'},
+            //{ field: "phone", displayName: '电话号'},
+            { field: "referralCode", displayName: '推广码'},
+            //{ field: "state", displayName: '状态',cellFilter:'stateFilter'},
+            { field: "createTime", displayName: '注册时间'},
+
+            // { field: "applyPost", displayName: '应聘职位'},
+            {
+                width: '100',
+                field : 'action',
+                displayName : "操作",
+                enableColumnMenu: false,// 是否显示列头部菜单按钮
+                enableHiding: false,
+                enableCellEdit: false,
+                cellTemplate : '<a class="btn btn-xs btn-info" data-toggle="modal" data-target="#myModal" style="margin-left: 5px;margin-right: 5px;margin-bottom: 2px;margin-top: 2px;" ng-click="grid.appScope.getUserFund(row.entity.userId)"> <i class="glyphicon glyphicon-edit icon-white"></i>资金余额 </a>'/* +
+                '<a class="btn btn-xs btn-danger" ng-click="grid.appScope.del(row)"> <i class="glyphicon glyphicon-trash icon-white"></i>删除 </a>'*/
+            }
+        ];
+    }).controller('configCtrl', function($rootScope,$scope,UtilService,GridService) {
+        $scope.dictTypes = [{"typeId":1,"typeName":"佣金比例分成"},{"typeId":2,"typeName":"京东账号配置"},{"typeId":3,"typeName":"微信小程序配置"},{"typeId":4,"typeName":"提现配置"}];
+        $scope.params = {
+            pageSize:15,
+            pageNum:1,
+            classifyId:0
+        },
+        //操作接口
+        $scope.operations = {
+            "query":"config/list",
+            "add":"config/save",
+            "save":"config/save"
+        }
+        GridService.initGrid($scope,$scope.operations.query,$scope.params);
+        $scope.query();
+       /* $scope.getUserFund = function (value) {
+            $scope.userIdParams = {"keyStr":value};
+            UtilService.getData("sys/queryUserFundByUserId", $scope.userIdParams).then(function (res) {
+                console.log("res",res);
+                if (res.meta.code == '0') {
+                    $scope.userFund = res.data;
+                } else {
+                    $scope.msg =res.meta.msg;
+                    layer.msg(res.meta.msg, {icon: 5});//哭脸
+                }
+            });
+        }*/
+
+        $scope.gridOptions.columnDefs = [
+            { field: "id",width: '80', displayName: 'id'},
+            { field: "type", displayName: '类型',cellFilter:'configType'},
+            { field: "key", displayName: '配置变量名'},
+            { field: "value", displayName: '配置变量值'},
+            { field: "remark", displayName: '配置说明'},
+            {
+                width: '100',
+                field : 'action',
+                displayName : "操作",
+                enableColumnMenu: false,// 是否显示列头部菜单按钮
+                enableHiding: false,
+                enableCellEdit: false,
+                cellTemplate : '<a class="btn btn-xs btn-info" data-toggle="modal" data-target="#myModal" style="margin-left: 5px;margin-right: 5px;margin-bottom: 2px;margin-top: 2px;" ng-click="grid.appScope.updateRow(row)"> <i class="glyphicon glyphicon-edit icon-white"></i>修改 </a>' /* +
+                    '<a class="btn btn-xs btn-danger" ng-click="grid.appScope.del(row)"> <i class="glyphicon glyphicon-trash icon-white"></i>删除 </a>'*/
+            }
+        ];
+    })
+    .controller('actCtrl', function($rootScope,$scope,UtilService,GridService) {
+        $scope.actTypes = [{"typeId":1,"typeName":"京东618活动"},{"typeId":2,"typeName":"京粉活动"},{"typeId":3,"typeName":"开普勒活动"},{"typeId":4,"typeName":"双11活动"}];
+        $scope.params = {
+            pageSize:15,
+            pageNum:1,
+            classifyId:0
+        },
+            //操作接口
+            $scope.operations = {
+                "query":"config/getActInfoList",
+                "add":"config/updateActivityInfo",
+                "save":"config/updateActivityInfo"
+            }
+        GridService.initGrid($scope,$scope.operations.query,$scope.params);
+        $scope.query();
+         $scope.addIndex = function () {
+             if($scope.model.detailList==undefined ||$scope.model.detailList=='undefined'){
+                 $scope.model.detailList = [];
+             }
+
+             $scope.model.detailList.push({"actId":$scope.model.id});
+         }
+
+        $scope.gridOptions.columnDefs = [
+            { field: "id",width: '80', displayName: 'id'},
+            { field: "actType", displayName: '类型',cellFilter:'actType'},
+            { field: "webTitle", displayName: '页面标题'},
+            { field: "actTitle", displayName: '活动标题'},
+            { field: "actContent", displayName: '活动内容'},
+            { field: "state", displayName: '状态',cellFilter:'stateFilter'},
+            {
+                width: '100',
+                field : 'action',
+                displayName : "操作",
+                enableColumnMenu: false,// 是否显示列头部菜单按钮
+                enableHiding: false,
+                enableCellEdit: false,
+                cellTemplate : '<a class="btn btn-xs btn-info" data-toggle="modal" data-target="#myModal" style="margin-left: 5px;margin-right: 5px;margin-bottom: 2px;margin-top: 2px;" ng-click="grid.appScope.updateRow(row)"> <i class="glyphicon glyphicon-edit icon-white"></i>修改 </a>' /* +
+                    '<a class="btn btn-xs btn-danger" ng-click="grid.appScope.del(row)"> <i class="glyphicon glyphicon-trash icon-white"></i>删除 </a>'*/
+            }
+        ];
+    })
+    .controller('searchLogCtrl', function($rootScope,$scope,UtilService,GridService) {
+        $scope.params = {
+            pageSize:15,
+            pageNum:1
+        },
+            //操作接口
+            $scope.operations = {
+                "query":"sys/getSearchLogList",
+                "add":"sys/getSearchLogList",
+                "save":"sys/getSearchLogList"
+            }
+        GridService.initGrid($scope,$scope.operations.query,$scope.params);
+        $scope.query();
+
+        $scope.gridOptions.columnDefs = [
+            { field: "id",width: '80', displayName: 'id'},
+            { field: "nickName", displayName: '用户昵称'},
+            { field: "searchKey", displayName: '搜索关键字'},
+            { field: "searchResult", displayName: '搜索结果'},
+            { field: "createTime", displayName: '搜索时间'},
+
+        ];
+    })
+    .controller('operLogCtrl', function($rootScope,$scope,UtilService,GridService) {
+        $scope.params = {
+            pageSize:15,
+            pageNum:1,
+            operType:1,
+            nickName:''
+        };
+        $scope.operTypes = [{"typeId":1,"typeName":"登录"},{"typeId":2,"typeName":"查看商品"},{"typeId":3,"typeName":"分享商品"},{"typeId":4,"typeName":"分享小程序"}];
+            //操作接口
+            $scope.operations = {
+                "query":"sys/getOperLogList"
+            }
+        GridService.initGrid($scope,$scope.operations.query,$scope.params);
+        $scope.query();
+
+        $scope.gridOptions.columnDefs = [
+            { field: "id",width: '80', displayName: 'id'},
+            { field: "nickName", displayName: '用户昵称'},
+            { field: "operType", displayName: '操作类型',cellFilter:'operTypeFilter'},
+            { field: "info", displayName: '操作信息'},
+            { field: "createTime", displayName: '操作时间'}
+        ];
+    })
+;

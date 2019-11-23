@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>拼购商品池</title>
+</head>
+<body>
+<!--查询选项-->
+<div class="box">
+    <div class="box-inner">
+        <div class="box-header" data-original-title="">
+            <h2><i class="glyphicon glyphicon-edit"style="padding-left: 20px;"></i>当前位置：<span style="font-size: 14px">拼购商品池</span></h2>
+        </div>
+        <form class="form-inline" role="form">
+            <div class="row">
+                <div class="col-md-8 col-sm-8 col-xs-8 paddingTop">
+                    <b>&nbsp;&nbsp;jd.kpl.open.querypingpou.getcpsskubypage ( 拼购商品池查询接口 )</b><br/>
+                    &nbsp;&nbsp;精选拼购优质商品，可通过频道ID查询各个频道下的拼购商品 ||poolID说明：||<br/>
+                    &nbsp;&nbsp;20190415001：1元福利新带新商品池（1元新人福利商品，开团需新人拉新人完成拼团，新人才可获得1元商品） ||<br/>
+                    &nbsp;&nbsp;20190415002：1元福利老带新商品池（1元新人福利商品，开团需老人拉新人完成拼团，老人才可获得1元商品） ||<br/>
+                    &nbsp;&nbsp;20190415003：9.9元包邮商品池; ||<br/>
+                    &nbsp;&nbsp;20190415004：自营优选商品池（自营商品，京东正品保障，极速配送的拼购商品）||<br/>
+                    &nbsp;&nbsp;20190415005：拼购居家 电子文娱精选商品池（居家、图书、电子等高佣低价主推拼购商品）；||<br/>
+                    &nbsp;&nbsp;20190415006：拼购快消精选商品池（日用百货、生鲜、休闲食品等高佣低价主推拼购商品） ||<br/>
+                    &nbsp;&nbsp;20190415007：拼购时尚日常精选商品池（服饰、鞋靴、箱包、运动等高佣低价主推拼购商品）||<br/>
+                    &nbsp;&nbsp;20190415008：拼购名品特卖精选商品池（品牌特卖清仓，主打性价比及品牌性拼购商品）<br/>
+                </div>
+            </div>
+            <div class="row center">
+                <div class="col-md-4 col-sm-4 col-xs-4 paddingTop">
+                    <span class="input-label">频道id：</span>
+                    <select  class="form-control" ng-model="params.pool" style="height:30px;width: 180px;">
+                        <option value="">--请选择--</option>
+                        <option ng-repeat="op in poolTypes" value="{{op.typeId}}">{{op.typeName}}</option>
+                    </select>
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-4" style="padding-top: 5px;">
+                    <button class="btn btn-default btn-sm" ng-click="reset()">重置</button>
+                    <button class="btn btn-primary btn-sm" ng-click="query()">查询</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<!--查询结果列表-->
+<div class="box-inner">
+
+    <div class="box-header" data-original-title="">
+
+        <h2><i class="glyphicon glyphicon-list" style="padding-left: 20px;"></i> 商品列表</h2>
+
+    </div>
+
+    <div class="box-content" style="padding: 0px;padding-bottom: 0px;">
+
+        <div class="box-content">
+
+            <div  ui-grid="gridOptions" style="width: 100%; height: 500px; margin: -10px;" ui-grid-pagination
+                  ui-grid-selection  ui-grid-exporter ui-grid-resize-columns ui-grid-auto-resize>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!--提报优惠券集合 弹框-->
+
+<!--全详细信息 弹框-->
+
+
+</body>
+</html>

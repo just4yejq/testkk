@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>活动配置管理</title>
+</head>
+<div class="box">
+    <div class="box-inner">
+        <div class="box-header" data-original-title="">
+            <h2><i class="glyphicon glyphicon-edit"style="padding-left: 20px;"></i>当前位置：<span style="font-size: 14px">活动配置管理</span></h2>
+        </div>
+        <form class="form-inline" role="form">
+            <div class="row center">
+                <div class="col-md-4 col-sm-4 col-xs-4 paddingTop">
+                    <span class="input-label">配置类型：</span>
+                    <select  class="form-control" ng-model="params.actTypes" style="height:30px;width: 180px;">
+                        <option value="">--请选择--</option>
+                        <option ng-repeat="op in dictTypes" value="{{op.typeId}}">{{op.typeName}}</option>
+                    </select>
+                </div>
+              <div class="col-md-4 col-sm-4 col-xs-4" style="padding-top: 5px;">
+                  <button class="btn btn-default btn-sm" ng-click="reset()">重置</button>
+                  <button class="btn btn-primary btn-sm" ng-click="query()">查询</button>
+              </div>
+          </div>
+        </form>
+    </div>
+</div>
+<div class="box-inner">
+    <div class="box-header" data-original-title="">
+        <h2><i class="glyphicon glyphicon-list" style="padding-left: 20px;"></i> 配置列表</h2>
+        <!--<button class="btn btn-danger btn-sm pull-right" style="margin-right: 20px;" ng-click="del()"><i class="glyphicon glyphicon-trash icon-white"></i>删 除</button>-->
+        <button class="btn btn-primary btn-sm pull-right" style="margin-right: 15px;" data-toggle="modal" data-target="#myModal" ng-click="add()"><i class="glyphicon glyphicon-plus icon-white"></i>添 加</button>
+    </div>
+    <div class="box-content" style="padding: 0px;padding-bottom: 0px;">
+        <div class="box-content">
+            <div  ui-grid="gridOptions" style="width: 100%; height: 500px; margin: -10px;" ui-grid-pagination
+                  ui-grid-selection  ui-grid-exporter ui-grid-resize-columns ui-grid-auto-resize>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 弹出框  -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop="static" aria-hidden="true" style="position:absolute;top:0% ;">
+    <div class="modal-dialog">
+        <div class="panel">
+            <div class="panel-heading" style="background-color: lavender">
+                配置信息
+                <button type="button" class="close pull-right" data-dismiss="modal">
+                    &times;
+                </button>
+            </div>
+            <div class="panel-body">
+                <div class="form-inline" style="margin-top: -5px">
+                    <div class="form-group" style="padding-left: 20px;">
+                        <label class="form-label">  配置类型：</label>
+                        <select ng-model="model.actType" class="form-control" style="width:180px;height:30px;">
+                            <option value="">--请选择--</option>
+                            <option ng-repeat="op in actTypes" value="{{op.typeId}}" ng-selected="model.actType==op.typeId">{{op.typeName}}</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="padding-left: 20px;">
+                        <label class="form-label">  网页标题：</label>
+                        <input type="text" class="form-control" ng-model="model.webTitle" style="width:180px;height:30px;">
+                    </div>
+                </div>
+                <div class="form-inline" style="margin-top: 5px">
+                    <div class="form-group" style="padding-left: 20px;">
+                        <label class="form-label">  活动标题：</label>
+                        <input type="text" class="form-control" ng-model="model.actTitle" style="width:180px;height:30px;">
+                    </div>
+                    <div class="form-group" style="padding-left: 20px;">
+                        <label class="form-label">  &#12288;&#12288;状态：</label>
+                        <input type="text" class="form-control" ng-model="model.state" style="width:180px;height:30px;">
+                    </div>
+                </div>
+                <div class="form-inline" style="margin-top: 5px">
+                    <div class="form-group" style="padding-left: 20px;margin-top: 5px">
+                        <label class="form-label">  活动内容：</label>
+                        <textarea class="autogrow form-control" ng-model="model.actContent" style="width: 450px;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-body" ng-repeat="detail in model.detailList" style="margin-top: -20px">
+                ------------------------------------------------活动明细{{detail.index}}---------------------------------------------
+                <div class="form-inline" style="margin-top: 5px">
+                    <div class="form-group" style="padding-left: 20px;">
+                        <label class="form-label">  活动标题：</label>
+                        <input type="text" class="form-control" ng-model="detail.actDetailTitle" style="width:180px;height:30px;">
+                    </div>
+                    <div class="form-group" style="padding-left: 20px;">
+                        <label class="form-label">  活动链接：</label>
+                        <input type="text" class="form-control" ng-model="detail.actDetailUrl" style="width:180px;height:30px;">
+                    </div>
+                </div>
+                <div class="form-inline" style="margin-top: 5px">
+                    <div class="form-group" style="padding-left: 20px;">
+                        <label class="form-label">  活动时间：</label>
+                        <input type="text" class="form-control" ng-model="detail.startTime" style="width:180px;height:30px;">
+                    </div>
+                    <div class="form-group" style="padding-left: 20px;">
+                        <label class="form-label">  结束时间：</label>
+                        <input type="text" class="form-control" ng-model="detail.endTime" style="width:180px;height:30px;">
+                    </div>
+                </div>
+                <div class="form-inline" style="margin-top: 5px">
+                    <div class="form-group" style="padding-left: 20px;">
+                        <label class="form-label">  &#12288;&#12288;状态：</label>
+                        <input type="text" class="form-control" ng-model="detail.state" style="width:180px;height:30px;">
+                    </div>
+                    <div class="form-group" style="padding-left: 20px;">
+                        <label class="form-label">  &#12288;&#12288;序号：</label>
+                        <input type="text" class="form-control" ng-model="detail.index" style="width:180px;height:30px;">
+                    </div>
+                </div>
+                <div class="form-inline" style="margin-top: 5px">
+                    <div class="form-group" style="padding-left: 20px;margin-top: 5px">
+                        <label class="form-label">  活动内容：</label>
+                        <textarea class="autogrow form-control" ng-model="detail.actDetailContent" style="width: 450px;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="center">
+                    <button type="button" class="btn btn-sm btn-info" ng-click="addIndex()">
+                        新增一条明细
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary" ng-click="save()">
+                        保存
+                    </button>
+                    <button type="button" class="btn btn-sm btn-default" data-dismiss="modal" >退出
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.modal -->
+</div>
+<style>
+    .paddingTop{
+       padding-top:8px;
+    }
+</style>
+</html>

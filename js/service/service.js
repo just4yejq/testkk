@@ -1,8 +1,8 @@
 /**
  * Created by leroy on 2017/7/31.
  */
-// var baseUrl = 'https://www.codetheworld.cn/service/';
-var baseUrl = 'http://127.0.0.1:8081/';
+var baseUrl = 'https://www.codetheworld.cn/service/';
+// var baseUrl = 'http://127.0.0.1:8081/';
 angular.module('myApp.services',[])
     .service('UtilService', function($http,$q,$rootScope,modalService) {
     return {
